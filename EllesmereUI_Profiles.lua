@@ -2196,6 +2196,11 @@ function EllesmereUI.SwitchProfile(name)
                 -- Switch the active profile immediately (persisted on logout)
                 db.activeProfile = name
                 RepointAllDBs(name)
+                -- Notify external modules that profile data was repointed.
+                -- They cannot participate in sync (their folder is in
+                -- _syncExempt) but their db.profile pointer just moved, so
+                -- any cached state should be rebuilt.
+                EllesmereUI.FireModuleCallback("ProfileChanged", name)
                 -- Prompt for reload
                 EllesmereUI:ShowConfirmPopup({
                     title = "Reload Recommended",
@@ -2211,6 +2216,10 @@ function EllesmereUI.SwitchProfile(name)
 
     db.activeProfile = name
     RepointAllDBs(name)
+    -- Notify external modules that the active profile changed and their
+    -- db.profile pointer was repointed. See EllesmereUI_ExternalModules.lua
+    -- for the subscription API (EllesmereUI.RegisterModuleCallback).
+    EllesmereUI.FireModuleCallback("ProfileChanged", name)
 end
 
 function EllesmereUI.GetActiveProfileName()
